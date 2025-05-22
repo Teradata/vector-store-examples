@@ -1,6 +1,14 @@
 # vector-store-examples
 ## Index
 
-- Bring External Embeddings from Unstructured into Teradata database table with vector datatype and run semantic similarity search
-- Vector Store Creation with SQL
-- Vector Store Creation with SQL using BYOM
+- Getting_Started
+-- Getting started in Vector Store (python)
+- Unstructured.io_Import_Embeddings
+-- Partition with Unstructured.io
+-- Create embeddings with Langchain
+-- Import embeddings to Teradata table with vector datatype
+-- Normalize imported embeddings
+- Vector_Store_Creation_with_SQL
+-- 
+- Vector_Store_Database_Functions
+-- 
