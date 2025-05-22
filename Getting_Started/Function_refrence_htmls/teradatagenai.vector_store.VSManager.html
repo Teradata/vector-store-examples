@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: class VSManager</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><strong>teradatagenai.vector_store.VSManager</strong> = <a name="teradatagenai.vector_store.VSManager">class VSManager</a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Vector&nbsp;store&nbsp;manager&nbsp;allows&nbsp;user&nbsp;to:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Perform&nbsp;health&nbsp;check&nbsp;for&nbsp;the&nbsp;vector&nbsp;store&nbsp;service.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;List&nbsp;all&nbsp;the&nbsp;vector&nbsp;stores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;List&nbsp;all&nbsp;the&nbsp;active&nbsp;sessions&nbsp;of&nbsp;the&nbsp;vector&nbsp;store&nbsp;service.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Disconnect&nbsp;from&nbsp;the&nbsp;database&nbsp;session.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Static methods defined here:<br>
+<dl><dt><a name="VSManager-disconnect"><strong>disconnect</strong></a>(session_id=None, raise_error=True)</dt><dd><tt>DESCRIPTION:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Databse&nbsp;session&nbsp;created&nbsp;for&nbsp;vector&nbsp;store&nbsp;operation&nbsp;is&nbsp;disconnected<br>
+&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;corresponding&nbsp;underlying&nbsp;objects&nbsp;are&nbsp;deleted.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;When&nbsp;'session_id'&nbsp;argument&nbsp;is&nbsp;passed,&nbsp;only&nbsp;that&nbsp;session&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;disconnected,&nbsp;else&nbsp;all&nbsp;session&nbsp;IDs&nbsp;created&nbsp;during&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current&nbsp;Python&nbsp;session&nbsp;are&nbsp;disconnected.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Only&nbsp;admin&nbsp;users&nbsp;can&nbsp;disconnect&nbsp;session<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;created&nbsp;by&nbsp;other&nbsp;users.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Refer&nbsp;to&nbsp;the&nbsp;'Admin&nbsp;Flow'&nbsp;section&nbsp;in&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;guide&nbsp;for&nbsp;details.<br>
+&nbsp;<br>
+PARAMETERS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;session_id:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Optional&nbsp;Argument.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Specifies&nbsp;the&nbsp;session&nbsp;ID&nbsp;to&nbsp;terminate.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;not&nbsp;specified&nbsp;all&nbsp;the&nbsp;database&nbsp;sessions&nbsp;created<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;current&nbsp;Python&nbsp;session&nbsp;are&nbsp;terminated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Types:&nbsp;str<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;raise_error:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Optional&nbsp;Argument.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Specifies&nbsp;a&nbsp;boolean&nbsp;flag&nbsp;that&nbsp;decides&nbsp;whether&nbsp;to&nbsp;raise&nbsp;error&nbsp;or&nbsp;not.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default&nbsp;Values:&nbsp;True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Types:&nbsp;bool<br>
+&nbsp;<br>
+RETURNS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None<br>
+&nbsp;<br>
+RAISES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;TeradataMlException<br>
+&nbsp;<br>
+EXAMPLES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;from&nbsp;teradatagenai&nbsp;import&nbsp;VSManager<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Example&nbsp;1:&nbsp;Disconnect&nbsp;from&nbsp;the&nbsp;database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Create&nbsp;an&nbsp;instance&nbsp;of&nbsp;the&nbsp;VectorStore&nbsp;class.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;vs&nbsp;=&nbsp;VectorStore(name="vec1")<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Create&nbsp;a&nbsp;vector&nbsp;store.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;vs.create(object_names="amazon_reviews_25",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description="vector&nbsp;store&nbsp;testing",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key_columns=['rev_id',&nbsp;'aid'],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_columns=['rev_text'],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vector_column='VectorIndex',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;embeddings_model="amazon.titan-embed-text-v1")<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Disconnect&nbsp;from&nbsp;the&nbsp;database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;VSManager.<a href="#teradatagenai.vector_store.VSManager-disconnect">disconnect</a>()</tt></dd></dl>
+
+<dl><dt><a name="VSManager-health"><strong>health</strong></a>()</dt><dd><tt>DESCRIPTION:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Performs&nbsp;sanity&nbsp;check&nbsp;for&nbsp;the&nbsp;service.<br>
+&nbsp;<br>
+RETURNS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;teradataml&nbsp;DataFrame&nbsp;containing&nbsp;details&nbsp;on&nbsp;the&nbsp;health&nbsp;of&nbsp;the&nbsp;service.<br>
+&nbsp;<br>
+RAISES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;TeradataMlException<br>
+&nbsp;<br>
+EXAMPLES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Example&nbsp;1:&nbsp;Check&nbsp;the&nbsp;health&nbsp;of&nbsp;the&nbsp;service.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;VSManager.<a href="#teradatagenai.vector_store.VSManager-health">health</a>()</tt></dd></dl>
+
+<dl><dt><a name="VSManager-list"><strong>list</strong></a>(**kwargs)</dt><dd><tt>DESCRIPTION:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Lists&nbsp;all&nbsp;the&nbsp;vector&nbsp;stores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Lists&nbsp;all&nbsp;vector&nbsp;stores&nbsp;if&nbsp;user&nbsp;has&nbsp;admin&nbsp;role&nbsp;permissions.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Lists&nbsp;vector&nbsp;stores&nbsp;permitted&nbsp;to&nbsp;the&nbsp;user.<br>
+&nbsp;<br>
+RETURNS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;teradataml&nbsp;DataFrame&nbsp;containing&nbsp;the&nbsp;vector&nbsp;store&nbsp;details.<br>
+&nbsp;<br>
+RAISES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;TeradataMlException<br>
+&nbsp;<br>
+EXAMPLES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;from&nbsp;teradatagenai&nbsp;import&nbsp;VSManager<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;List&nbsp;all&nbsp;the&nbsp;vector&nbsp;stores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;VSManager.<a href="#teradatagenai.vector_store.VSManager-list">list</a>()</tt></dd></dl>
+
+<dl><dt><a name="VSManager-list_patterns"><strong>list_patterns</strong></a>(log=False)</dt><dd><tt>DESCRIPTION:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Lists&nbsp;all&nbsp;the&nbsp;patterns&nbsp;in&nbsp;the&nbsp;vector&nbsp;store.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Only&nbsp;admin&nbsp;users&nbsp;can&nbsp;use&nbsp;this&nbsp;method.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Refer&nbsp;to&nbsp;the&nbsp;'Admin&nbsp;Flow'&nbsp;section&nbsp;in&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;guide&nbsp;for&nbsp;details.<br>
+&nbsp;<br>
+PARAMETERS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;log:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Optional&nbsp;Argument.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Specifies&nbsp;whether&nbsp;logging&nbsp;should&nbsp;be&nbsp;enabled&nbsp;for&nbsp;vector&nbsp;store<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;methods.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Note:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;case&nbsp;of&nbsp;any&nbsp;errors,&nbsp;by&nbsp;default&nbsp;it&nbsp;will&nbsp;be&nbsp;written<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;datadog&nbsp;even&nbsp;if&nbsp;logging&nbsp;not&nbsp;enabled.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default&nbsp;Value:&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Types:&nbsp;bool<br>
+&nbsp;<br>
+&nbsp;<br>
+RETURNS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;teradataml&nbsp;DataFrame&nbsp;containing&nbsp;the&nbsp;patterns.<br>
+&nbsp;<br>
+RAISES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;TeradataMlException<br>
+&nbsp;<br>
+EXAMPLES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;from&nbsp;teradataml&nbsp;import&nbsp;VSManager<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;List&nbsp;all&nbsp;the&nbsp;patterns.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;VSManager.<a href="#teradatagenai.vector_store.VSManager-list_patterns">list_patterns</a>()</tt></dd></dl>
+
+<dl><dt><a name="VSManager-list_sessions"><strong>list_sessions</strong></a>()</dt><dd><tt>DESCRIPTION:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Lists&nbsp;all&nbsp;the&nbsp;active&nbsp;sessions&nbsp;of&nbsp;the&nbsp;vector&nbsp;store&nbsp;service.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Only&nbsp;admin&nbsp;users&nbsp;can&nbsp;use&nbsp;this&nbsp;method.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Refer&nbsp;to&nbsp;the&nbsp;'Admin&nbsp;Flow'&nbsp;section&nbsp;in&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;User&nbsp;guide&nbsp;for&nbsp;details.<br>
+RETURNS:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;teradataml&nbsp;DataFrame&nbsp;containing&nbsp;the&nbsp;active&nbsp;sessions.<br>
+&nbsp;<br>
+RAISES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;TeradataMlException<br>
+&nbsp;<br>
+EXAMPLES:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;from&nbsp;teradatagenai&nbsp;import&nbsp;VSManager<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;List&nbsp;all&nbsp;the&nbsp;vector&nbsp;stores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&gt;&gt;&gt;&nbsp;VSManager.<a href="#teradatagenai.vector_store.VSManager-list_sessions">list_sessions</a>()</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table>
+</body></html>
