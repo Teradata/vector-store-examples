@@ -1,0 +1,3405 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Data Insights Service API",
+        "description": "Data Insights Tenant Service APIs to enable a database user to get questions answered from their database in a conversational manner.",
+        "version": "1.0.405"
+    },
+    "paths": {
+        "/data-insights/api/v1/health": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Check the health of the service.",
+                "description": "Sanity check.",
+                "operationId": "health_data_insights_api_v1_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Healthy",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "status": "up",
+                                    "platform": "aws",
+                                    "version": "1.0.0",
+                                    "sessions_count": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/sessions": {
+            "get": {
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Get all sessions opened from VDS service.",
+                "description": "Count and details of all sessions opened from VDS service.",
+                "operationId": "sessions_count_data_insights_api_v1_sessions_get",
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All Sessions for Application object",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "count": 1,
+                                    "session_details": [
+                                        {
+                                            "session_id": "session_id",
+                                            "username": "username",
+                                            "vs_names": [
+                                                "vs_name1",
+                                                "vs_name2"
+                                            ]
+                                        }
+                                    ],
+                                    "self_session_id": "session_id"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/sessions/{user_session_id}": {
+            "delete": {
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Terminate other user's session from VDS service and database.",
+                "description": "Terminate other user's session from VDS service and database.",
+                "operationId": "terminate_user_session_data_insights_api_v1_sessions__user_session_id__delete",
+                "parameters": [
+                    {
+                        "name": "user_session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "User Session Id"
+                        }
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session disconnected for user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                },
+                                "example": {
+                                    "message": "Session <user_session_id> disconnected from database and VDS service."
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User without TD_AIAdmin role cannot terminate another user's session."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Session <user_session_id> not found."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/session": {
+            "post": {
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Log in and establish a database connection.",
+                "description": "This call establishes a database connection using the provided credentials.",
+                "operationId": "connect_to_database_data_insights_api_v1_session_post",
+                "security": [
+                    {
+                        "HTTPBasic": []
+                    },
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DbConnectDetails"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Connection Established",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                },
+                                "example": {
+                                    "message": "Database connection established in <elapsed_time_ms> milliseconds."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Failed to establish a database connection."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Invalid or missing credentials."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Session"
+                ],
+                "summary": "Logout session and cleanup resources.",
+                "description": "This call closes the database connection and cleans up resources.",
+                "operationId": "disconnect_from_database_data_insights_api_v1_session_delete",
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Connection Closed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                },
+                                "example": {
+                                    "message": "Database connection closed."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores": {
+            "get": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Get a list of authorized vector stores.",
+                "description": "This call gives the list of vector stores that are currently authorized for the user.",
+                "operationId": "get_vectorstores_data_insights_api_v1_vectorstores_get",
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List Retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "vector_stores_count": 2,
+                                    "vector_stores_list": [
+                                        {
+                                            "vs_name": "amazon_reviews",
+                                            "store_type": "content-based",
+                                            "description": "Amazon reviews about the book 'The Prophet' by Kahlil Gibran",
+                                            "database_name": "oaf",
+                                            "vs_status": "READY",
+                                            "permission": "ADMIN"
+                                        },
+                                        {
+                                            "vs_name": "cricket",
+                                            "store_type": "metadata-based",
+                                            "description": "ODI and test cricket data",
+                                            "database_name": "semantic_data",
+                                            "vs_status": "READY",
+                                            "permission": "USER"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}": {
+            "post": {
+                "tags": [
+                    "Vector Stores"
+                ],
+                "summary": "Create a new vector store.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin`\n\nThis call creates a new vector store and sets up its index.\nThe embeddings are generated using configuration specified in vs_parameters and vs_index.\nFor content-based vector store, the embeddings are generated using the contents of the tables and views specified in object_names.\nFor metadata-based vector store, the embeddings are generated using the metadata of the tables and views specified using include_objects and include_patterns.\nFor search_algorithm KMEANS and HNSW, index is also trained because of which, it may take longer to set up compared to vector distance.\nThe resultant vector store is distributed leveraging MPP architecture and resides in the database specified in vs_index.\n\n## vs_name\n\nSpecifies the name of the vector store. This is a required argument.\n\n## vs_index\n\n| Parameter | Description | Allowed Values | Default |\n| --------- | ----------- | -------------- | ------- |\n| **target_database** | Target database for the vectorstore. | String | Logged-in database |\n| **vector_column** | Column name to be used in the vector store containing embeddings.| String | `vector_index` |\n| ***<u>CONTENT-BASED VS </br> FILE-BASED VS </br> EMBEDDING-BASED VS</u>:*** |\n| **object_names** | List of tables and views to be indexed. If multiple objects are specified, all must have the same key columns and data columns. For file-based vector store, only one name should be specified to be used for file content splits. | List of Strings | `[]` |\n| **key_columns** | List of input column names to be used for indexing. Multiple key columns can be specified. For file-based vector store, this parameter is not needed. In case of multiple input files, a key_column containing the file names is generated. | List of Strings | <ul><li>CONTENT/EMBEDDING-BASED VS: `['TD_ID']`</li><li>FILE-BASED VS: `['TD_ID', 'TD_FILENAME']`</li></ul> |\n| **data_columns** | List of input column names to be used for embeddings (vectorization). When multiple data columns are specified, data is unpivoted to get a new key column \"AttributeName\" and a single data column \"AttributeValue\". For file-based vector store, it refers to the column name where the file content splits will be stored. | List of Strings | <ul><li>CONTENT/EMBEDDING-BASED VS: `[]`</li><li>FILE-BASED VS: `['file_splits']`</li></ul> |\n| ***<u>EMBEDDING-BASED VS</u>:*** |\n| **is_embedded** | Whether the input contains the embedding. | Bool | `False` |\n| **is_normalized** | Whether the input contains the normalized embedding.| Bool | `False` |\n| ***<u>FILE-BASED VS</u>:*** |\n| **chunk_size** | Number of characters in each chunk to be used during splitting of input file.| Int | `512` |\n| **optimized_chunking** | Whether an optimized splitting mechanism supplied by Teradata should be used. The documents are parsed internally in an intelligent fashion based on file structure and chunks are dynamically created based on section layout.| Bool | `True` |\n| **nv_ingestor** | Whether to use NVIDIA NV-Ingest for processing the document files.| Bool | `False` |\n| **extract_text** | Whether to extract text from the document files when using NVIDIA NV-Ingest.| Bool | `True` |\n| **extract_images** | Whether to extract images from the document files when using NVIDIA NV-Ingest.| Bool | `True` |\n| **extract_tables** | Whether to extract tables from the document files when using NVIDIA NV-Ingest.| Bool | `True` |\n| **extract_infographics** | Whether to extract infographics from the document files when using NVIDIA NV-Ingest.| Bool | `False` |\n| **extract_method** | Method to be used for extracting text from the document files when using NVIDIA NV-Ingest. | <ul><li>pdfium</li><li>nemoretriever_parse</li></ul> | `pdfium` |\n| **display_metadata** | Whether to display metadata describing objects extracted from the document files when using NVIDIA NV-Ingest.| Bool | `False` |\n| **header_height** | Height of the header to be trimmed from the PDF files.| Int | `0` |\n| **footer_height** | Height of the footer to be trimmed from the PDF files.| Int | `0` |\n| **tokenizer** | Tokenizer to be used for splitting the text into chunks. Applicable only for NVIDIA NV-Ingest.| String | `meta-llama/Llama-3.2-1B` |\n| **hf_access_token** | Hugging Face access token to be used for accessing the tokenizer. Applicable only for NVIDIA NV-Ingest.| String | `None` |\n| ***<u>METADATA-BASED VS</u>:*** |\n| **include_objects** | List of tables and views to be included in the metadata-based vector store.| List of Strings | `[]` |\n| **exclude_objects** | List of tables and views to be excluded from the metadata-based vector store.| List of Strings | `[]` |\n| **include_patterns** | List of patterns to be included in the metadata-based vector store.| List of Strings | `[]` |\n| **exclude_patterns** | List of patterns to be excluded from the metadata-based vector store.| List of Strings | `[]` |\n| **sample_size** | Number of rows to be sampled from the tables and views to be included in the embeddings for metadata-based vector store.| Int | `20` |\n\n## vs_parameters\n\n| Parameter | Description | Allowed Values | Default |\n| --------- | ----------- | -------------- | ------- |\n| **description** | Description of the vector store. | String | - |\n| **embeddings_model** | Embeddings model to be used for generating the embeddings. | AWS:<ul><li>amazon.titan-embed-text-v1</li><li>amazon.titan-embed-image-v1</li><li>amazon.titan-embed-text-v2:0</li></ul>Azure: <ul><li>text-embedding-ada-002</li><li>text-embedding-3-small</li><li>text-embedding-3-large</li></ul> | AWS:<ul><li>`amazon.titan-embed-text-v2:0`</li></ul>Azure: <ul><li>`text-embedding-3-small`</li></ul> |\n| **embeddings_dims** | Number of dimensions to be used for generating the embeddings. | AWS:<ul><li>amazon.titan-embed-text-v1: [1536]</li><li>amazon.titan-embed-image-v1: [256, 384, 1024]</li><li>amazon.titan-embed-text-v2:0: [256, 512, 1024]</li></ul>Azure: <ul><li>text-embedding-ada-002: [1536]</li><li>text-embedding-3-small: [1-1536]</li><li>text-embedding-3-large: [1-3072]</li></ul> | AWS:<ul><li>amazon.titan-embed-text-v1: `1536`</li><li>amazon.titan-embed-image-v1: `1024`</li><li>amazon.titan-embed-text-v2:0: `1024`</li></ul>Azure: <ul><li>text-embedding-ada-002: `1536`</li><li>text-embedding-3-small: `1536`</li><li>text-embedding-3-large: `3072`</li></ul> |\n| **ignore_embedding_errors** | Whether to ignore errors during embedding generation. | Bool | `FALSE` |\n| **metric** | Metric to be used for calculating the distance between the vectors. | <ul><li>EUCLIDEAN</li><li>COSINE</li><li>DOTPRODUCT</li></ul> | `COSINE` |\n| **search_algorithm** | Algorithm to be used for indexing. The search for relevant responses to a question is performed using this algorithm. | <ul><li>VECTORDISTANCE</li><li>KMEANS</li></li><li>HNSW</li></ul> | `VECTORDISTANCE` |\n| **top_k** | Number of top similarity matches to be generated. | [1-1024] | `10` |\n| **search_threshold** | Threshold value to consider matching tables/views while searching. A higher threshold value limits responses to the top matches only. Applicable to search_algorithm VECTORDISTANCE and KMEANS. | Float | - |\n| **search_numcluster** | Number of clusters or fraction of train_numcluster to be considered while searching. Applicable to search_algorithm KMEANS. | [1-train_numcluster] | - |\n| **ef_search** | Specify the number of neighbors to consider while searching. Applicable to search_algorithm HNSW. | [1-1024] | `32` |\n| **initial_centroids_method** | Algorithm to be used for initializing the centroids. Applicable to search_algorithm KMEANS. | <ul><li>RANDOM</li><li>KMEANS++</li></ul> | `RANDOM` |\n| **train_numcluster** | Number of clusters to be trained. Applicable to search_algorithm KMEANS. | [2-33553920] | - |\n| **max_iternum** | Maximum number of iterations to be run during training. Applicable to search_algorithm KMEANS. | [1-2147483647] | `10` |\n| **stop_threshold** | The threshold value at which training should be stopped. Applicable to search_algorithm KMEANS. | Float >= 0.0 | `0.0395` |\n| **seed** | Seed value to be used for random number generation.  Applicable to search_algorithm KMEANS and HNSW. | [0-2147483647] | `0` |\n| **num_init** | Number of times, the k-means algorithm will be run with different initial centroid seeds. Applicable to search_algorithm KMEANS. | [1-2147483647] | `1` |\n| **num_layer** | Specify the maximum number of layers for the HNSW graph. Applicable to search_algorithm HNSW. | [1-1024] | - |\n| **ef_construction** | Specify the number of neighbors to consider while constructing the HNSW graph. Applicable to search_algorithm HNSW. | [1-1024] | `32` |    \n| **num_connPerNode** | Specify number of connections for a node in HNSW graph during construction. Applicable to search_algorithm HNSW. | [1-1024] | `32` |\n| **maxNum_connPerNode** | Specify maximum number of connections allowed for a node in HNSW graph during construction. Applicable to search_algorithm HNSW. | [1-1024] | `32` |\n| **apply_heuristics** | Specify whether to apply heuristics optimizations during construction of HNSW graph. Applicable to search_algorithm HNSW. | Bool | `TRUE` |\n| **prompt** | The prompt to be used by language model to generate responses using top matches. | String | An internal prompt optimized for general use cases. |\n| **chat_completion_model** | Chat completion model to be used for generating responses. | AWS:<ul><li>anthropic.claude-3-haiku-20240307-v1:0</li><li>anthropic.claude-instant-v1</li><li>anthropic.claude-3-5-sonnet-20240620-v1:0</li></ul>Azure:<ul><li>gpt-4o</li></ul> | AWS:<ul><li>`anthropic.claude-3-haiku-20240307-v1:0`</li></ul>Azure:<ul><li>`gpt-4o`</li></ul> |\n| **rerank_weight** | Weight to be used for reranking the search results. | 0.0 <= Float <= 1.0 | `0.2` |\n| **relevance_top_k** | Number of top similarity matches to be considered for reranking. | [1-1024] | max(top_k*2, 60) |\n| **relevance_search_threshold** | Threshold value to consider matching tables/views while reranking. A higher threshold value limits responses to the top matches only. | Float | search_threshold |\n| **chat_completion_max_tokens** | Maximum number of tokens to be generated by the chat completion model. | [1-16384] | `16384` |\n| **base_url_embeddings** | Base URL for the service to be used for generating embeddings. | URL | - |\n| **base_url_completions** | Base URL for the service to be used for generating completions. | URL | - |\n| **base_url_ranking** | Base URL for the service to be used for reranking. | URL | - |\n| **doc_ingest_host** | HTTP host for the service to be used for document parsing. | IP | - |\n| **ranking_model** | Model to be used for reranking. | String | - |\n| **doc_ingest_port** | HTTP port for the service to be used for document parsing. | Int | `7670` |\n| **time_zone** | User's time zone. | String | `UTC` |\n\n## document_files\n\nThis is required for file-based vector store and can be used to specify input dataset in document files format.\nOnly pdf format is currently supported.\nMultiple document files can be supplied.\nThe files are processed internally, converted to chunks and stored into a database table.\nAlternatively, users can choose to chunk their files themselves, stored them into a database table and specify the details of that table using vs_index parameter.\n\n## log_level\n\nSpecifies the level of logging for the APIs.\nThis is optional and accepts values 0 (no logging) or 1 (verbose). Default is `0`.",
+                "operationId": "create_vectorstore_data_insights_api_v1_vectorstores__vs_name__post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_create_vectorstore_data_insights_api_v1_vectorstores__vs_name__post"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Creation Started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "example": {
+                                    "vs_name": "<vs_name>",
+                                    "status": "CREATING",
+                                    "message": "Vector store <vs_name> creation started."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "invalid_index": {
+                                        "summary": "Invalid Index",
+                                        "value": {
+                                            "detail": "Invalid JSON format for vs_index."
+                                        }
+                                    },
+                                    "invalid_parameters": {
+                                        "summary": "Invalid Parameters",
+                                        "value": {
+                                            "detail": "Invalid JSON format for vs_parameters."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the TD_AIAdmin role to create a new vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "invalid_database_name": {
+                                        "summary": "Invalid Database Name",
+                                        "value": {
+                                            "detail": "Database '<database_name>' does not exist."
+                                        }
+                                    },
+                                    "invalid_object_name": {
+                                        "summary": "Invalid Object Name",
+                                        "value": {
+                                            "detail": "Object '<database_name>.<object_name>' does not exist."
+                                        }
+                                    },
+                                    "invalid_column_name": {
+                                        "summary": "Invalid Column Name",
+                                        "value": {
+                                            "detail": "Column '<column_name>' does not exist in the object '<database_name>.<object_name>'."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> already exists. Please use a different name for the vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Vector Stores"
+                ],
+                "summary": "Get status/details of a vector store.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin or` \n\n`PERMISSION REQUIRED: ADMIN or USER`\n\nIF get_details is set to True, this call gives the details of the vector store.\n\nELSE IF get_object_list is set to True, it returns the list of objects in the vector store. This usecase is applicable only for metadata-based vector stores.\n\nELSE this call gives the current status of the vector store / batch process and any error message if the vector store is in an error state.",
+                "operationId": "get_vectorstore_status_data_insights_api_v1_vectorstores__vs_name__get",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "get_details",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Get the details of the vector store.",
+                            "default": false,
+                            "title": "Get Details"
+                        },
+                        "description": "Get the details of the vector store."
+                    },
+                    {
+                        "name": "get_object_list",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Get the list of objects in the metadata-based vector store.",
+                            "default": false,
+                            "title": "Get Object List"
+                        },
+                        "description": "Get the list of objects in the metadata-based vector store."
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status/Object List Retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "examples": {
+                                    "status_in_progress": {
+                                        "summary": "Status: In Progress",
+                                        "value": {
+                                            "vs_name": "<vs_name>",
+                                            "status": "CREATING (GENERATING EMBEDDINGS)",
+                                            "retry_after": 60
+                                        }
+                                    },
+                                    "status_completed": {
+                                        "summary": "Status: Completed",
+                                        "value": {
+                                            "vs_name": "<vs_name>",
+                                            "status": "READY"
+                                        }
+                                    },
+                                    "status_failed": {
+                                        "summary": "Status: Failed",
+                                        "value": {
+                                            "vs_name": "<vs_name>",
+                                            "status": "CREATE FAILED",
+                                            "error": "Object '<database_name>.<object_name>' does not exist."
+                                        }
+                                    },
+                                    "get_details": {
+                                        "summary": "Get Details",
+                                        "value": {
+                                            "vs_name": "amazon_reviews_vectorstore",
+                                            "store_type": "content-based",
+                                            "description": "Amazon reviews about the book \"The Prophet\" by Kahlil Gibran",
+                                            "database_name": "oaf",
+                                            "sample_size": 20,
+                                            "embeddings_model": "amazon.titan-embed-text-v1",
+                                            "embeddings_dims": 1536,
+                                            "metric": "COSINE",
+                                            "search_algorithm": "KMEANS",
+                                            "top_k": 10,
+                                            "search_numcluster": 1,
+                                            "initial_centroids_method": "RANDOM",
+                                            "train_numcluster": 5,
+                                            "max_iternum": 10,
+                                            "stop_threshold": 0.0395,
+                                            "seed": 0,
+                                            "num_init": 1,
+                                            "include_patterns": "[]",
+                                            "exclude_patterns": "[]",
+                                            "include_objects": "[]",
+                                            "exclude_objects": "[]",
+                                            "document_objects": "[\"amazon_reviews_25\"]",
+                                            "document_columns": "[\"rev_text\"]",
+                                            "document_indexes": "[\"rev_id\", \"aid\"]",
+                                            "vector_column": "VectorIndex",
+                                            "chat_completion_model": "anthropic.claude-3-haiku-20240307-v1:0",
+                                            "rerank_weight": 0.2,
+                                            "relevance_top_k": 60,
+                                            "chat_completion_max_tokens": 4096,
+                                            "vs_status": "READY",
+                                            "permission": "ADMIN"
+                                        }
+                                    },
+                                    "object_list": {
+                                        "summary": "Object List",
+                                        "value": {
+                                            "object_count": 2,
+                                            "object_list": [
+                                                "<database_name>.<object_name1>",
+                                                "<database_name>.<object_name2>"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Object list is available only for metadata-based vector stores."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "get_details": {
+                                        "summary": "Get Details",
+                                        "value": {
+                                            "detail": "User must have the ADMIN or USER permission to view the details of this vector store."
+                                        }
+                                    },
+                                    "get_object_list": {
+                                        "summary": "Get Object List",
+                                        "value": {
+                                            "detail": "User must have the ADMIN or USER permission to view the objects in this vector store."
+                                        }
+                                    },
+                                    "get_status": {
+                                        "summary": "Get Status",
+                                        "value": {
+                                            "detail": "User must have the TD_AIAdmin role or ADMIN/USER permission to view the status of this vector store."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Vector Stores"
+                ],
+                "summary": "Update an existing vector store.",
+                "description": "`PERMISSION REQUIRED: ADMIN`\n\nUpdate an existing vector store with the specified parameters.\nWhen any parameter except [embeddings_model, embeddings_dims] is modified, the underlying embeddings aren't regenerated.\nWhen search_algorithm is modified to KMEANS or HNSW, index training also takes place as a result.\n\n## vs_name\n\nSpecifies the name of the vector store. This is a required argument.\n\n## vs_index\n\n| Parameter | Description | Allowed Values | Default |\n| --------- | ----------- | -------------- | ------- |\n| **alter_operation** | Operation to be performed on the vector store. | <ul><li>ADD</li><li>DELETE</li></ul> | - |\n| **update_style** | Style to be used for ADD/DELETE of the rows from the vector store.| <ul><li>MINOR</li><li>MAJOR</li></ul> | `MINOR` |\n| ***<u>CONTENT-BASED VS </br> FILE-BASED VS </br> EMBEDDING-BASED VS</u>:*** |\n| **object_names** | List of tables or views to be indexed. For file-based vector store, only one table name should be specified to be used for file content splits.| List of Strings | `[]` |\n| ***<u>EMBEDDING-BASED VS</u>:*** |\n| **is_embedded** | Whether the input contains the embedding.| Bool | `False` |\n| **is_normalized** | Whether the input contains the normalized embedding. | Bool | `False` |\n| ***<u>FILE-BASED VS</u>:*** |\n| **chunk_size** | Number of characters in each chunk to be used during splitting of input file. | Int | `512` |\n| **optimized_chunking** | Whether an optimized splitting mechanism supplied by Teradata should be used. The documents are parsed internally in an intelligent fashion based on file structure and chunks are dynamically created based on section layout.| Bool | `True` |\n| **nv_ingestor** | Whether to use NVIDIA NV-Ingest for processing the document files.| Bool | `False` |\n| **extract_text** | Whether to extract text from the document files when using NVIDIA NV-Ingest.| Bool | `True` |\n| **extract_images** | Whether to extract images from the document files when using NVIDIA NV-Ingest.| Bool | `True` |\n| **extract_tables** | Whether to extract tables from the document files when using NVIDIA NV-Ingest.| Bool | `True` |\n| **extract_infographics** | Whether to extract infographics from the document files when using NVIDIA NV-Ingest.| Bool | `False` |\n| **extract_method** | Method to be used for extracting text from the document files when using NVIDIA NV-Ingest. | <ul><li>pdfium</li><li>nemoretriever_parse</li></ul> | `pdfium` |\n| **display_metadata** | Whether to display metadata describing objects extracted from the document files when using NVIDIA NV-Ingest.| Bool | `False` |\n| **header_height** | Height of the header to be trimmed from the PDF files.| Int | `0` |\n| **footer_height** | Height of the footer to be trimmed from the PDF files.| Int | `0` |\n| **tokenizer** | Tokenizer to be used for splitting the text into chunks. Applicable only for NVIDIA NV-Ingest.| String | `meta-llama/Llama-3.2-1B` |\n| **hf_access_token** | Hugging Face access token to be used for accessing the tokenizer. Applicable only for NVIDIA NV-Ingest.| String | `None` |\n| ***<u>METADATA-BASED VS</u>:*** |\n| **include_objects** | List of tables and views to be included in the metadata-based vector store.| List of Strings | `[]` |\n| **exclude_objects** | List of tables and views to be excluded from the metadata-based vector store.| List of Strings | `[]` |\n| **include_patterns** | List of patterns to be included in the metadata-based vector store.| List of Strings | `[]` |\n| **exclude_patterns** | List of patterns to be excluded from the metadata-based vector store.| List of Strings | `[]` |\n| **sample_size** | Number of rows to be sampled from the tables and views to be included in the embeddings for metadata-based vector store.| Int | - |\n\n## vs_parameters\n\n| Parameter | Description | Allowed Values |\n| --------- | ----------- | -------------- |\n| **description** | Description of the vector store. | String |\n| **embeddings_model** | Embeddings model to be used for generating the embeddings. | AWS:<ul><li>amazon.titan-embed-text-v1</li><li>amazon.titan-embed-image-v1</li><li>amazon.titan-embed-text-v2:0</li></ul>Azure: <ul><li>text-embedding-ada-002</li><li>text-embedding-3-small</li><li>text-embedding-3-large</li></ul> |\n| **embeddings_dims** | Number of dimensions to be used for generating the embeddings. | AWS:<ul><li>amazon.titan-embed-text-v1: [1536]</li><li>amazon.titan-embed-image-v1: [256, 384, 1024]</li><li>amazon.titan-embed-text-v2:0: [256, 512, 1024]</li></ul>Azure: <ul><li>text-embedding-ada-002: [1536]</li><li>text-embedding-3-small: [1-1536]</li><li>text-embedding-3-large: [1-3072]</li></ul> |\n| **ignore_embedding_errors** | Whether to ignore errors during embedding generation. | Bool |\n| **metric** | Metric to be used for calculating the distance between the vectors. | <ul><li>EUCLIDEAN</li><li>COSINE</li><li>DOTPRODUCT</li></ul> |\n| **search_algorithm** | Algorithm to be used for indexing. The search for relevant responses to a question is performed using this algorithm. | <ul><li>VECTORDISTANCE</li><li>KMEANS</li></li><li>HNSW</li></ul> |\n| **top_k** | Number of top similarity matches to be generated. | [1-1024] |\n| **search_threshold** | Threshold value to consider matching tables/views while searching. A higher threshold value limits responses to the top matches only. Applicable to search_algorithm VECTORDISTANCE and KMEANS. | Float |\n| **search_numcluster** | Number of clusters or fraction of train_numcluster to be considered while searching. Applicable to search_algorithm KMEANS. | [1-train_numcluster] |\n| **ef_search** | Specify the number of neighbors to consider while searching. Applicable to search_algorithm HNSW. | [1-1024] |\n| **initial_centroids_method** | Algorithm to be used for initializing the centroids. Applicable to search_algorithm KMEANS. | <ul><li>RANDOM</li><li>KMEANS++</li></ul> |\n| **train_numcluster** | Number of clusters to be trained. Applicable to search_algorithm KMEANS. | [2-33553920] |\n| **max_iternum** | Maximum number of iterations to be run during training. Applicable to search_algorithm KMEANS. | [1-2147483647] |\n| **stop_threshold** | The threshold value at which training should be stopped. Applicable to search_algorithm KMEANS. | Float >= 0.0 |\n| **seed** | Seed value to be used for random number generation.  Applicable to search_algorithm KMEANS and HNSW. | [0-2147483647] |\n| **num_init** | Number of times, the k-means algorithm will be run with different initial centroid seeds. Applicable to search_algorithm KMEANS. | [1-2147483647] |\n| **num_layer** | Specify the maximum number of layers for the HNSW graph. Applicable to search_algorithm HNSW. | [1-1024] |\n| **ef_construction** | Specify the number of neighbors to consider while constructing the HNSW graph. Applicable to search_algorithm HNSW. | [1-1024] |\n| **num_connPerNode** | Specify number of connections for a node in HNSW graph during construction. Applicable to search_algorithm HNSW. | [1-1024] |\n| **maxNum_connPerNode** | Specify maximum number of connections allowed for a node in HNSW graph during construction. Applicable to search_algorithm HNSW. | [1-1024] |\n| **apply_heuristics** | Specify whether to apply heuristics optimizations during construction of HNSW graph. Applicable to search_algorithm HNSW. | Bool |\n| **prompt** | The prompt to be used by language model to generate responses using top matches. | String |\n| **chat_completion_model** | Chat completion model to be used for generating responses. | AWS:<ul><li>anthropic.claude-3-haiku-20240307-v1:0</li><li>anthropic.claude-instant-v1</li><li>anthropic.claude-3-5-sonnet-20240620-v1:0</li></ul>Azure:<ul><li>gpt-4o</li></ul> |\n| **rerank_weight** | Weight to be used for reranking the search results. | 0.0 <= Float <= 1.0 |\n| **relevance_top_k** | Number of top similarity matches to be considered for reranking. | [1-1024] |\n| **relevance_search_threshold** | Threshold value to consider matching tables/views while reranking. A higher threshold value limits responses to the top matches only. | Float |\n| **chat_completion_max_tokens** | Maximum number of tokens to be generated by the chat completion model. | [1-16384] |\n| **base_url_embeddings** | Base URL for the service to be used for generating embeddings. | URL |\n| **base_url_completions** | Base URL for the service to be used for generating completions. | URL |\n| **base_url_ranking** | Base URL for the service to be used for reranking. | URL |\n| **doc_ingest_host** | HTTP host for the service to be used for document parsing. | IP |\n| **ranking_model** | Model to be used for reranking. | String |\n| **doc_ingest_port** | HTTP port for the service to be used for document parsing. | Int |\n| **time_zone** | User's time zone. | String |\n\n## document_files\n\nThis is required for file-based vector store and can be used to specify input dataset in document files format.\nOnly pdf format is currently supported.\nMultiple document files can be supplied.\nThe files are processed internally, converted to chunks and stored into a database table.\n\n## log_level\n\nSpecifies the level of logging for the APIs.\nThis is optional and accepts values 0 (no logging) or 1 (verbose). Default is `0`.",
+                "operationId": "update_vectorstore_data_insights_api_v1_vectorstores__vs_name__patch",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_update_vectorstore_data_insights_api_v1_vectorstores__vs_name__patch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Update Started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "example": {
+                                    "vs_name": "<vs_name>",
+                                    "status": "UPDATING",
+                                    "message": "Vector store <vs_name> update started."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "missing_index_parameters": {
+                                        "summary": "Missing both Index and Parameters",
+                                        "value": {
+                                            "detail": "You must provide parameters to update the vector store."
+                                        }
+                                    },
+                                    "invalid_index": {
+                                        "summary": "Invalid Index",
+                                        "value": {
+                                            "detail": "Invalid JSON format for vs_index."
+                                        }
+                                    },
+                                    "invalid_parameters": {
+                                        "summary": "Invalid Parameters",
+                                        "value": {
+                                            "detail": "Invalid JSON format for vs_parameters."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN permission to update this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Vector Stores"
+                ],
+                "summary": "Destroy a vector store.",
+                "description": "`PERMISSION REQUIRED: ADMIN`\n\nDestroy the vector store and clean up all related resources. The vector store cannot be accessed after this call.",
+                "operationId": "destroy_vectorstore_data_insights_api_v1_vectorstores__vs_name__delete",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Destroy Started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "example": {
+                                    "vs_name": "<vs_name>",
+                                    "status": "DESTROYING",
+                                    "message": "Vector store <vs_name> destroy started."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Error message."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN permission to destroy this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/permissions/{vs_name}": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Get list of authenticated users for a vector store along with their level of permission.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin`",
+                "operationId": "get_permissions_data_insights_api_v1_permissions__vs_name__get",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List Retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "authenticated_users": {
+                                        "dbc": "ADMIN",
+                                        "alice": "USER",
+                                        "bob": "NO ACCESS",
+                                        "oaf": "ADMIN"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the TD_AIAdmin role to get the list of authenticated users for a particular vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Grant or revoke USER/ADMIN permissions for a user on the vector store.",
+                "description": "`PERMISSION REQUIRED: ADMIN`\n\nThe user that creates a vector store becomes the sole ADMIN of the vector store.\nThis user can use this permissions API to authenticate other users access to this vector store.\n\nThe APIs for Update, Destroy, and Grant/Revoke Permissions need ADMIN permissions to the vector store.\n\nThe APIs for Similarity Search, Prepare Response, and Ask, Get Status and Get Details need USER permissions to the vector store.",
+                "operationId": "modify_permissions_data_insights_api_v1_permissions__vs_name__put",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "user_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the user to grant/revoke permissions",
+                            "title": "User Name"
+                        },
+                        "description": "Name of the user to grant/revoke permissions"
+                    },
+                    {
+                        "name": "action",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/AuthenticationAction",
+                            "default": "GRANT"
+                        }
+                    },
+                    {
+                        "name": "permission",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/PermissionLevel",
+                            "default": "USER"
+                        }
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Authentication",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                },
+                                "examples": {
+                                    "grant_user": {
+                                        "summary": "USER Permission Granted",
+                                        "value": {
+                                            "message": "USER permission for vector store <vs_name> has been granted to user <user_name>."
+                                        }
+                                    },
+                                    "grant_admin": {
+                                        "summary": "ADMIN Permission Granted",
+                                        "value": {
+                                            "message": "ADMIN permission for vector store <vs_name> has been granted to user <user_name>."
+                                        }
+                                    },
+                                    "revoke_user": {
+                                        "summary": "USER Permission Revoked",
+                                        "value": {
+                                            "message": "USER permission for vector store <vs_name> has been revoked from user <user_name>."
+                                        }
+                                    },
+                                    "revoke_admin": {
+                                        "summary": "ADMIN Permission Revoked",
+                                        "value": {
+                                            "message": "ADMIN permission for vector store <vs_name> has been revoked from user <user_name>."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "invalid_action": {
+                                        "summary": "Invalid Action",
+                                        "value": {
+                                            "detail": "Invalid action."
+                                        }
+                                    },
+                                    "invalid_permission": {
+                                        "summary": "Invalid Permission",
+                                        "value": {
+                                            "detail": "Invalid permission level."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN permission to grant/revoke permissions for this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}/similarity-search": {
+            "post": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Perform similarity search in the vector store for the input question.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThe algorithm specified in search_algorithm is used to perform the search against the vector store.\nThe result contains top_k rows along with similarity score found by the search_algorithm to be most relevant to the question based on the specified metric.\nThis API is supported for both content-based and metadata-based vector stores.",
+                "operationId": "similarity_search_data_insights_api_v1_vectorstores__vs_name__similarity_search_post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "question",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Question to search the vector store",
+                            "title": "Question"
+                        },
+                        "description": "Question to search the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/SingleInput"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "title": "Input Index"
+                            },
+                            "example": {
+                                "input_table": "",
+                                "input_query_column": "",
+                                "question_vector": ""
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Search",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "similar_objects_count": 1,
+                                    "similar_objects_list": [
+                                        {
+                                            "score": 0.8,
+                                            "column1": "value1",
+                                            "column2": "value2"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "You must provide a question to search the vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform similarity search on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "No matching rows found."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}/similarity-search-batch": {
+            "post": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Perform similarity search in the vector store for the batch input.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nInitiates the batch similarity search. Results can be fetched using the session ID.\nThis API is supported for both content-based and metadata-based vector stores.",
+                "operationId": "similarity_search_batch_data_insights_api_v1_vectorstores__vs_name__similarity_search_batch_post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/BatchInput"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "title": "Batch Input Index"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Batch initiated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "example": {
+                                    "vs_name": "<vs_name>",
+                                    "status": "similarity search batch in progress",
+                                    "message": "Similarity search batch processing for session id <session_id>."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "You must provide a batch input to search the vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform similarity search on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Get the results of a similarity search batch operation.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThis API is used to get the results of a similarity search batch operation performed using the similarity_search_batch API.\nThis API is supported for both content-based and metadata-based vector stores.",
+                "operationId": "get_similarity_search_batch_data_insights_api_v1_vectorstores__vs_name__similarity_search_batch_get",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Search",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "similar_objects_count": 250,
+                                    "similar_objects_list": {
+                                        "query_id1": [
+                                            {
+                                                "score": 0.8,
+                                                "id_col": "id1",
+                                                "data_col": "data1"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Similarity search batch processing for session id <session_id> is not in progress."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform similarity search on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}/prepare-response": {
+            "post": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Prepare a natural language response using the input question and similarity search results.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThe response is generated by a language model configured in the environment using a pre-configured prompt.\nAn optional parameter prompt can be used to specify a customized prompt that replaces the internal prompt.\nThis API is supported only for content-based vector stores.",
+                "operationId": "prepare_response_data_insights_api_v1_vectorstores__vs_name__prepare_response_post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PrepareResponseInteractive"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                },
+                                "example": {
+                                    "message": "There are 100 users."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "missing_question": {
+                                        "summary": "Missing Question",
+                                        "value": {
+                                            "detail": "You must provide a question to prepare the response."
+                                        }
+                                    },
+                                    "invalid_similar_objects": {
+                                        "summary": "Invalid Similar Objects",
+                                        "value": {
+                                            "detail": "Invalid similar_objects provided."
+                                        }
+                                    },
+                                    "metadata_based_vs": {
+                                        "summary": "Metadata-based Vector Store",
+                                        "value": {
+                                            "detail": "Prepare response is not supported for metadata-based vector stores."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to prepare response on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}/prepare-response-batch": {
+            "post": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Prepare natural language responses using the batch input and batch similarity search results.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThe responses are generated by a language model configured in the environment using a pre-configured prompt.\nAn optional parameter prompt can be used to specify a customized prompt that replaces the internal prompt.\nThis API is supported only for content-based vector stores.",
+                "operationId": "prepare_response_batch_data_insights_api_v1_vectorstores__vs_name__prepare_response_batch_post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PrepareResponseBatch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Batch initiated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "example": {
+                                    "vs_name": "<vs_name>",
+                                    "status": "prepare response batch in progress",
+                                    "message": "Preparing response batch for session id <session_id>."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "missing_batch_input": {
+                                        "summary": "Missing Batch Input",
+                                        "value": {
+                                            "detail": "You must provide a batch input to prepare the responses."
+                                        }
+                                    },
+                                    "invalid_similar_objects": {
+                                        "summary": "Invalid Similar Objects",
+                                        "value": {
+                                            "detail": "Invalid similar_objects provided."
+                                        }
+                                    },
+                                    "metadata_based_vs": {
+                                        "summary": "Metadata-based Vector Store",
+                                        "value": {
+                                            "detail": "Prepare response batch is not supported for metadata-based vector stores."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform prepare response on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Get the results of a prepare response batch operation.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThis API is used to get the results of a prepare response batch operation performed using the prepare_response_batch API.\nThis API is supported only for content-based vector stores.",
+                "operationId": "get_prepare_response_batch_data_insights_api_v1_vectorstores__vs_name__prepare_response_batch_get",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Search",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "response_count": 250,
+                                    "response_list": [
+                                        {
+                                            "<id_col>": "<id1>",
+                                            "<query_col>": "<query1",
+                                            "modelOutput": "<response1>"
+                                        },
+                                        {
+                                            "<id_col>": "<id2>",
+                                            "<query_col>": "<query2",
+                                            "modelOutput": "<response2>"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Preparing response batch for session id <session_id> is not in progress."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform prepare response on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}/ask": {
+            "post": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Perform similarity search in the vector store for the input question followed by preparing a natural language response.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThis API combines the operation of similarity_search and prepare_response into one call for faster response time.\nThis API is supported only for content-based vector stores.",
+                "operationId": "ask_ai_data_insights_api_v1_vectorstores__vs_name__ask_post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AskAIInteractive"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                },
+                                "example": {
+                                    "message": "There are 100 users."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "missing_question": {
+                                        "summary": "Missing Question",
+                                        "value": {
+                                            "detail": "You must provide a question to ask the vector store."
+                                        }
+                                    },
+                                    "metadata_based_vs": {
+                                        "summary": "Metadata-based Vector Store",
+                                        "value": {
+                                            "detail": "Ask is not supported for metadata-based vector stores."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform ask on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/vectorstores/{vs_name}/ask-batch": {
+            "post": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Perform similarity search in the vector store for the batch input followed by preparing natural language responses.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThis API combines the operation of similarity_search and prepare_response into one call for faster response time.\nThis API is supported only for content-based vector stores.",
+                "operationId": "ask_ai_batch_data_insights_api_v1_vectorstores__vs_name__ask_batch_post",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AskAIBatch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Batch initiated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreResponse"
+                                },
+                                "example": {
+                                    "vs_name": "<vs_name>",
+                                    "status": "ask batch in progress",
+                                    "message": "Ask batch processing for session id <session_id>."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "missing_batch_input": {
+                                        "summary": "Missing Batch Input",
+                                        "value": {
+                                            "detail": "You must provide a batch_input_table to ask the vector store."
+                                        }
+                                    },
+                                    "metadata_based_vs": {
+                                        "summary": "Metadata-based Vector Store",
+                                        "value": {
+                                            "detail": "Ask batch is not supported for metadata-based vector stores."
+                                        }
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform ask on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Ask"
+                ],
+                "summary": "Get the results of a ask batch operation.",
+                "description": "`PERMISSION REQUIRED: ADMIN or USER`\n\nThis API is used to get the results of a ask batch operation performed using the ask_ai_batch API.\nThis API is supported only for content-based vector stores.",
+                "operationId": "get_ask_ai_batch_data_insights_api_v1_vectorstores__vs_name__ask_batch_get",
+                "parameters": [
+                    {
+                        "name": "vs_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the vector store",
+                            "title": "Vs Name"
+                        },
+                        "description": "Name of the vector store"
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Search",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "response_count": 250,
+                                    "response_list": [
+                                        {
+                                            "<id_col>": "<id1>",
+                                            "<query_col>": "<query1",
+                                            "modelOutput": "<response1>"
+                                        },
+                                        {
+                                            "<id_col>": "<id2>",
+                                            "<query_col>": "<query2",
+                                            "modelOutput": "<response2>"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Ask batch processing for session id <session_id> is not in progress."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the ADMIN or USER permission to perform ask on this vector store."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Vector store <vs_name> is currently being created, updated, or destroyed."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/patterns": {
+            "get": {
+                "tags": [
+                    "Patterns"
+                ],
+                "summary": "Get a list of all patterns.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin`\n\nPattern names can be used as values for include_patterns and exclude_patterns parameters while creating or updating a metadata-based vector store.",
+                "operationId": "list_patterns_data_insights_api_v1_patterns_get",
+                "parameters": [
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "pattern_count": 1,
+                                    "pattern_list": [
+                                        {
+                                            "PatternName": "<pattern_name>",
+                                            "PatternString": "<pattern_string>"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the TD_AIAdmin role to list patterns."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/data-insights/api/v1/patterns/{pattern_name}": {
+            "get": {
+                "tags": [
+                    "Patterns"
+                ],
+                "summary": "Get a list of objects matching a pattern.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin`\n\nThe pattern must first be set. This routine returns the list of objects that match the pattern regex string.",
+                "operationId": "view_pattern_objects_data_insights_api_v1_patterns__pattern_name__get",
+                "parameters": [
+                    {
+                        "name": "pattern_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pattern Name"
+                        }
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "pattern_string": "<pattern_string>",
+                                    "object_count": 2,
+                                    "object_list": [
+                                        "<object_name1>",
+                                        "<object_name2>"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the TD_AIAdmin role to view the objects matching a pattern."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Pattern <pattern_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Patterns"
+                ],
+                "summary": "Create a new pattern.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin`\n\nThe pattern name is an identifier for the pattern while the pattern string is a regular expression that is used to match the database names and object names to be included/excluded in a metadata-based vector store.",
+                "operationId": "set_pattern_data_insights_api_v1_patterns__pattern_name__post",
+                "parameters": [
+                    {
+                        "name": "pattern_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pattern Name"
+                        }
+                    },
+                    {
+                        "name": "pattern_string",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pattern String"
+                        }
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Pattern <pattern_name> created."
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the TD_AIAdmin role to set a pattern."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Pattern <pattern_name> already exists. Please create it with a different name."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Patterns"
+                ],
+                "summary": "Delete a pattern.",
+                "description": "`ROLE REQUIRED: TD_AIAdmin`",
+                "operationId": "delete_pattern_data_insights_api_v1_patterns__pattern_name__delete",
+                "parameters": [
+                    {
+                        "name": "pattern_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pattern Name"
+                        }
+                    },
+                    {
+                        "name": "log_level",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Level of logging for the APIs",
+                            "default": 0,
+                            "title": "Log Level"
+                        },
+                        "description": "Level of logging for the APIs"
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "cookie",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Pattern <pattern_name> deleted."
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "User must have the TD_AIAdmin role to delete a pattern."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "detail": "Pattern <pattern_name> does not exist."
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AskAIBatch": {
+                "properties": {
+                    "batch_input_index": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/BatchInput"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "example": {
+                            "batch_input_id_column": "",
+                            "batch_input_query_column": "",
+                            "batch_input_table": ""
+                        }
+                    },
+                    "prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Prompt",
+                        "example": "Format the response as a JSON object."
+                    }
+                },
+                "type": "object",
+                "title": "AskAIBatch"
+            },
+            "AskAIInteractive": {
+                "properties": {
+                    "question": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Question",
+                        "example": "How many users are there?"
+                    },
+                    "prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Prompt",
+                        "example": "Format the response as a JSON object."
+                    }
+                },
+                "type": "object",
+                "title": "AskAIInteractive"
+            },
+            "AuthenticationAction": {
+                "type": "string",
+                "enum": [
+                    "GRANT",
+                    "REVOKE"
+                ],
+                "title": "AuthenticationAction"
+            },
+            "BatchInput": {
+                "properties": {
+                    "batch_input_table": {
+                        "type": "string",
+                        "title": "Batch Input Table",
+                        "default": "",
+                        "example": "table_name"
+                    },
+                    "batch_input_id_column": {
+                        "type": "string",
+                        "title": "Batch Input Id Column",
+                        "default": "",
+                        "example": "id_column"
+                    },
+                    "batch_input_query_column": {
+                        "type": "string",
+                        "title": "Batch Input Query Column",
+                        "default": "",
+                        "example": "query_column"
+                    }
+                },
+                "type": "object",
+                "title": "BatchInput"
+            },
+            "Body_create_vectorstore_data_insights_api_v1_vectorstores__vs_name__post": {
+                "properties": {
+                    "vs_index": {
+                        "type": "string",
+                        "title": "Vs Index",
+                        "default": "{}"
+                    },
+                    "vs_parameters": {
+                        "type": "string",
+                        "title": "Vs Parameters",
+                        "default": "{}"
+                    },
+                    "document_files": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Document Files",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "title": "Body_create_vectorstore_data_insights_api_v1_vectorstores__vs_name__post"
+            },
+            "Body_update_vectorstore_data_insights_api_v1_vectorstores__vs_name__patch": {
+                "properties": {
+                    "vs_index": {
+                        "type": "string",
+                        "title": "Vs Index"
+                    },
+                    "vs_parameters": {
+                        "type": "string",
+                        "title": "Vs Parameters"
+                    },
+                    "document_files": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Document Files",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "title": "Body_update_vectorstore_data_insights_api_v1_vectorstores__vs_name__patch"
+            },
+            "DbConnectDetails": {
+                "properties": {
+                    "database_name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Database Name",
+                        "description": "Database name for database access",
+                        "example": "oaf"
+                    },
+                    "hostname": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Hostname",
+                        "description": "Hostname for database access",
+                        "example": ""
+                    }
+                },
+                "type": "object",
+                "title": "DbConnectDetails"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "ErrorResponse"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "PermissionLevel": {
+                "type": "string",
+                "enum": [
+                    "USER",
+                    "ADMIN"
+                ],
+                "title": "PermissionLevel"
+            },
+            "PrepareResponseBatch": {
+                "properties": {
+                    "batch_input_index": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/BatchInput"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "example": {
+                            "batch_input_id_column": "",
+                            "batch_input_query_column": "",
+                            "batch_input_table": ""
+                        }
+                    },
+                    "similar_objects": {
+                        "additionalProperties": {
+                            "items": {
+                                "additionalProperties": true,
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "type": "object",
+                        "title": "Similar Objects",
+                        "default": {},
+                        "example": {
+                            "query_id1": [
+                                {
+                                    "data_col": "data1",
+                                    "id_col": "id1",
+                                    "score": 0.8
+                                }
+                            ]
+                        }
+                    },
+                    "prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Prompt",
+                        "example": "Format the response as a JSON object."
+                    }
+                },
+                "type": "object",
+                "title": "PrepareResponseBatch"
+            },
+            "PrepareResponseInteractive": {
+                "properties": {
+                    "question": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Question",
+                        "example": "How many users are there?"
+                    },
+                    "similar_objects": {
+                        "items": {
+                            "additionalProperties": true,
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Similar Objects",
+                        "default": [],
+                        "example": [
+                            {
+                                "column1": "value1",
+                                "column2": "value2",
+                                "score": 0.8
+                            }
+                        ]
+                    },
+                    "prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Prompt",
+                        "example": "Format the response as a JSON object."
+                    }
+                },
+                "type": "object",
+                "title": "PrepareResponseInteractive"
+            },
+            "SingleInput": {
+                "properties": {
+                    "input_table": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Input Table",
+                        "default": "",
+                        "example": "table_name"
+                    },
+                    "input_query_column": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Input Query Column",
+                        "default": "",
+                        "example": "query_column"
+                    },
+                    "question_vector": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Question Vector",
+                        "default": "",
+                        "example": "1.2,2.3,3.4,..."
+                    }
+                },
+                "type": "object",
+                "title": "SingleInput"
+            },
+            "SuccessResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "title": "SuccessResponse"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "VectorStoreResponse": {
+                "properties": {
+                    "vs_name": {
+                        "type": "string",
+                        "title": "Vs Name"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "message": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message"
+                    },
+                    "retry_after": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Retry After"
+                    },
+                    "error": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "vs_name",
+                    "status"
+                ],
+                "title": "VectorStoreResponse"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBasic": {
+                "type": "http",
+                "scheme": "basic"
+            },
+            "HTTPBearer": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Health",
+            "description": "Health Check"
+        },
+        {
+            "name": "Session",
+            "description": "Session Management"
+        },
+        {
+            "name": "Ask",
+            "description": "Ask Questions"
+        },
+        {
+            "name": "Permissions",
+            "description": "Permission Authentication"
+        },
+        {
+            "name": "Vector Stores",
+            "description": "Vector Store Management"
+        },
+        {
+            "name": "Patterns",
+            "description": "Pattern Management"
+        }
+    ]
+}
