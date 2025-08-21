@@ -1,0 +1,50 @@
+/*Connect to database*/
+.LOGMECH LDAP
+
+/*Replace the host, password, and database name with your own*/
+logon <host>,<password>;
+DATABASE <DB_Name>;
+
+/*Drop the table if it exists (uncomment the below line)*/
+DROP TABLE <DB_Name>.your_table_name;
+DROP TABLE <DB_Name>.your_table_name_err1;
+DROP TABLE <DB_Name>.your_table_name_err2;
+
+/*Replace the DB_NAME and XYZ_Table with your database and table names*/
+/*Replace the column names with the column names in your csv file*/
+CREATE SET TABLE <DB_Name>.your_table_name, FALLBACK,
+    NO BEFORE JOURNAL,
+    NO AFTER JOURNAL,
+    CHECKSUM = DEFAULT,
+    DEFAULT MERGEBLOCKRATIO
+    (
+        col1 VARCHAR(10),
+        col2 VARCHAR(100),
+        col3 VARCHAR(100)
+    ) UNIQUE PRIMARY INDEX (id);
+
+SET RECORD VARTEXT ",";
+
+RECORD 2;
+
+/*Replace the columns and file name with the columns in the CSV file and the name of your file*/
+
+DEFINE
+col1 (VARCHAR(10)),
+col2 (VARCHAR(100)),
+col3 (VARCHAR(100))
+FILE='C:/path/to/your/csv/file';
+
+SHOW;
+
+begin loading <DB_Name>.your_table_name errorfiles <DB_Name>.your_table_name_err1, <DB_Name>.your_table_name_err2;
+
+INSERT INTO <DB_Name>.your_table_name
+(
+    :col1,
+    :col2,
+    :col3
+);
+
+END LOADING;
+LOGOFF;
